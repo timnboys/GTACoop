@@ -22,6 +22,9 @@ namespace GTAServer.ServerRemoting
             Log = LogManager.GetLogger("Remoting");
         }
 
+        /// <summary>
+        /// Start remoting server
+        /// </summary>
         public void Start()
         {
             _server.Start();
