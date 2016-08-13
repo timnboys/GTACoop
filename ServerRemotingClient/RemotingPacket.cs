@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ProtoBuf;
 
-namespace GTAServer.ServerRemoting
+namespace ServerRemotingClient
 {
     /// <summary>
     /// Packet sent from client to run a remoting command
@@ -16,19 +16,23 @@ namespace GTAServer.ServerRemoting
         /// <summary>
         /// User to run command as
         /// </summary>
-        [ProtoMember(1)] public string Username;
+        [ProtoMember(1)]
+        public string Username;
         /// <summary>
         /// Password for the user to run the command as
         /// </summary>
-        [ProtoMember(2)] public string Password;
+        [ProtoMember(2)]
+        public string Password;
         /// <summary>
         /// Command to run
         /// </summary>
-        [ProtoMember(3)] public string Command;
+        [ProtoMember(3)]
+        public string Command;
         /// <summary>
         /// Command arguments
         /// </summary>
-        [ProtoMember(4)] public List<string> CommandArguments;
+        [ProtoMember(4)]
+        public List<string> CommandArguments;
 
         public RemotingPacket(string username, string password, string command, List<string> commandArguments)
         {
@@ -48,11 +52,12 @@ namespace GTAServer.ServerRemoting
         /// <summary>
         /// Command stauts
         /// </summary>
-        [ProtoMember(1)] public bool status;
+        [ProtoMember(1)]
+        public bool status;
         /// <summary>
         /// Command status message
         /// </summary>
-        [ProtoMember(2)] public string message;
+        [ProtoMember(2)]
+        public string message;
     }
-
 }

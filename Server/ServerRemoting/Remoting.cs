@@ -57,7 +57,7 @@ namespace GTAServer.ServerRemoting
         public void MainLoop()
         {
             NetIncomingMessage msg;
-            while (msg != null)
+            while ((msg = _server.ReadMessage()) != null)
             {
                 switch (msg.MessageType)
                 {
