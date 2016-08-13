@@ -128,9 +128,11 @@ namespace GTAServer
             curServer.AllowNickNames = settings.AllowDisplayNames;
             curServer.AllowOutdatedClients = settings.AllowOutdatedClients;
             curServer.GamemodeName = settings.Gamemode;
+            curServer.InternalName = settings.Handle;
             curServer.ConfigureServer();
-            curServer.SetupLogger(settings.Handle);
-            Log.Debug("Finished configuring server: " + settings.Handle + ", starting.");
+            curServer.SetupLogger();
+            curServer.SetupCallback();
+            Log.Info("Finished configuring server: " + settings.Handle + ", starting.");
             VirtualServerThreads[settings.Handle] = new Thread(curServer.StartAndRunMainLoop);
             VirtualServerThreads[settings.Handle].Start();
             Log.Debug("Server started, injecting filterscripts into " + settings.Handle);
@@ -140,6 +142,7 @@ namespace GTAServer
                 Log.Info("Filterscript " + script + " loading into server instance " + settings.Handle);
                 curServer.LoadFilterscript(script);
             }
+            Log.Info("Server " + settings.Handle + " is now finished starting.");
         }
     }
 }

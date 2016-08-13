@@ -14,7 +14,7 @@ using System.Security.Principal;
 using System.Diagnostics;
 using log4net;
 using log4net.Config;
-
+using mscoree;
 namespace GTAServer
 {
     /// <summary>
@@ -324,24 +324,6 @@ namespace GTAServer
             Config.EnableMessageType(NetIncomingMessageType.UnconnectedData);
             Config.EnableMessageType(NetIncomingMessageType.ConnectionLatencyUpdated);
         }
-        /*public GameServer(int port, string name, string gamemodeName)
-        {
-            Clients = new List<Client>();
-            MaxPlayers = 32;
-            Port = port;
-            GamemodeName = gamemodeName;
-            Name = name;
-            WanIP = "";
-            LanIP = "";
-            geoIP = null;
-            SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
-            NetPeerConfiguration config = new NetPeerConfiguration("GTAVOnlineRaces") {Port = port};
-            config.EnableMessageType(NetIncomingMessageType.ConnectionApproval);
-            config.EnableMessageType(NetIncomingMessageType.DiscoveryRequest);
-            config.EnableMessageType(NetIncomingMessageType.UnconnectedData);
-            config.EnableMessageType(NetIncomingMessageType.ConnectionLatencyUpdated);
-            Server = new NetServer(config);
-        }*/
         /// <summary>
         /// Server socket
         /// </summary>
@@ -363,6 +345,10 @@ namespace GTAServer
         /// Name of the server
         /// </summary>
         public string Name { get; set; }
+        /// <summary>
+        /// Set internal server name.
+        /// </summary>
+        public string InternalName { get; set; }
         /// <summary>
         /// Server password
         /// </summary>
@@ -434,13 +420,21 @@ namespace GTAServer
         /// Time since last announcing self to master
         /// </summary>
         private DateTime _lastAnnounceDateTime;
-
-        ///<summary>
+        /// <summary>
         /// Thread of current server
         /// </summary>
         public Thread Thread;
 
+        /// <summary>
+        /// Logging instance
+        /// </summary>
         public static ILog Log;
+
+        /// <summary>
+        /// Callback to the main server manager - note that this is class is not this appdomain!
+        /// </summary>
+        public CallbackToManager ServerManagerCallback;
+
         /// <summary>
         /// Sets all the config stuff for the server.
         /// Note - You must call this after any update to the config object.
@@ -455,10 +449,9 @@ namespace GTAServer
         /// </summary>
         public void StartAndRunMainLoop()
         {
-            if (Log == null)
-            {
-                SetupLogger("UNKNOWN_SERVER_FIXME");
-            }
+            if (InternalName == null) InternalName = "UNKNOWN_SERVER_FIXME";
+            if (Log == null) SetupLogger();
+            if (ServerManagerCallback == null) SetupCallback();
             Start();
             while (true)
             {
@@ -471,11 +464,26 @@ namespace GTAServer
         /// <summary>
         /// Set up logging for server instance
         /// </summary>
-        /// <param name="name">Name of the server instance's logger.</param>
-        public void SetupLogger(string name)
+        public void SetupLogger()
         {
+
             XmlConfigurator.Configure(new System.IO.FileInfo("logging.xml"));
-            Log = LogManager.GetLogger(name);
+            Log = LogManager.GetLogger(InternalName);
+        }
+
+        /// <summary>
+        /// Make the server hook into the server manager.
+        /// </summary>
+        public void SetupCallback()
+        {
+            var host = new CorRuntimeHostClass();
+            object obj;
+            host.GetDefaultDomain(out obj);
+            var parentAppDomain = (AppDomain)obj;
+            ServerManagerCallback =
+                (CallbackToManager)parentAppDomain.CreateInstanceFrom(new Uri(Assembly.GetExecutingAssembly().CodeBase).LocalPath,
+                   "GTAServer.CallbackToManager").Unwrap();
+            ServerManagerCallback.StartHook(InternalName);
         }
         /// <summary>
         /// Start a game server with no filterscripts loaded.
@@ -483,6 +491,7 @@ namespace GTAServer
         public void Start()
         {
             Start(new string[] {});
+
         }
 
         /// <summary>
