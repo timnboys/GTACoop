@@ -48,30 +48,35 @@ namespace GTAServer.ServerRemoting
                 }
             }
         }
-
+        /// <summary>
+        /// Main loop for remoting server.
+        /// </summary>
         public void MainLoop()
         {
             NetIncomingMessage msg;
-            switch (msg.MessageType)
+            while (msg != null)
             {
-                case NetIncomingMessageType.VerboseDebugMessage:
-                case NetIncomingMessageType.DebugMessage:
-                    Log.Debug("NetDebug: " + msg.ReadString());
-                    break;
-                case NetIncomingMessageType.WarningMessage:
-                    Log.Warn("NetWarn: " + msg.ReadString());
-                    break;
-                case NetIncomingMessageType.ErrorMessage:
-                    Log.Error("NetError: " + msg.ReadString());
-                    break;
-                case NetIncomingMessageType.Data:
-                    var len = msg.ReadInt32();
-                    var data = (RemotingPacket) DeserializeBinary<RemotingPacket>(msg.ReadBytes(len));
-                    Log.Info("Received a new RemotingPacket, command: " + data.Command);
-                    break;
-                case default:
-                    Log.Warn("Unknown message received: " + msg.MessageType);
-                    break;
+                switch (msg.MessageType)
+                {
+                    case NetIncomingMessageType.VerboseDebugMessage:
+                    case NetIncomingMessageType.DebugMessage:
+                        Log.Debug("NetDebug: " + msg.ReadString());
+                        break;
+                    case NetIncomingMessageType.WarningMessage:
+                        Log.Warn("NetWarn: " + msg.ReadString());
+                        break;
+                    case NetIncomingMessageType.ErrorMessage:
+                        Log.Error("NetError: " + msg.ReadString());
+                        break;
+                    case NetIncomingMessageType.Data:
+                        var len = msg.ReadInt32();
+                        var data = (RemotingPacket) DeserializeBinary<RemotingPacket>(msg.ReadBytes(len));
+                        Log.Info("Received a new RemotingPacket, command: " + data.Command);
+                        break;
+                    default:
+                        Log.Warn("Unknown message received: " + msg.MessageType);
+                        break;
+                }
             }
         }
     }
