@@ -47,7 +47,7 @@ namespace ServerRemotingClient
     /// Response from server to client
     /// </summary>
     [ProtoContract]
-    class RemotingResponse
+    public class RemotingResponse
     {
         /// <summary>
         /// Command stauts

@@ -51,6 +51,14 @@ namespace GTAServer.ServerRemoting
                 }
             }
         }
+        public byte[] SerializeBinary(object data)
+        {
+            using (var stream = new MemoryStream())
+            {
+                Serializer.Serialize(stream, data);
+                return stream.ToArray();
+            }
+        }
         /// <summary>
         /// Main loop for remoting server.
         /// </summary>
