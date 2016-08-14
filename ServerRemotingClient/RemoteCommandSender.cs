@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Lidgren.Network;
 using ProtoBuf;
@@ -37,6 +38,7 @@ namespace ServerRemotingClient
             message.Write(data.Length);
             message.Write(data);
             client.SendMessage(message, NetDeliveryMethod.ReliableOrdered);
+            Thread.Sleep(1000);
             return null;
         }
     }

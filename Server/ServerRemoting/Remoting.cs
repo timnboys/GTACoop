@@ -17,7 +17,7 @@ namespace GTAServer.ServerRemoting
         private readonly NetServer _server;
         public Remoting(int port)
         {
-            NetPeerConfiguration config = new NetPeerConfiguration("GTAServerRcon") {Port = port};
+            var config = new NetPeerConfiguration("GTAServerRcon") { Port = port };
             _server = new NetServer(config);
             Log = LogManager.GetLogger("Remoting");
         }
@@ -59,10 +59,18 @@ namespace GTAServer.ServerRemoting
                 return stream.ToArray();
             }
         }
+
         /// <summary>
         /// Main loop for remoting server.
         /// </summary>
         public void MainLoop()
+        {
+            while (true) WaitForMessage();
+        }
+        /// <summary>
+        /// Run to check for a message.
+        /// </summary>
+        public void WaitForMessage()
         {
             NetIncomingMessage msg;
             while ((msg = _server.ReadMessage()) != null)
@@ -81,7 +89,7 @@ namespace GTAServer.ServerRemoting
                         break;
                     case NetIncomingMessageType.Data:
                         var len = msg.ReadInt32();
-                        var data = (RemotingPacket) DeserializeBinary<RemotingPacket>(msg.ReadBytes(len));
+                        var data = (RemotingPacket)DeserializeBinary<RemotingPacket>(msg.ReadBytes(len));
                         Log.Info("Received a new RemotingPacket, command: " + data.Command);
                         break;
                     default:

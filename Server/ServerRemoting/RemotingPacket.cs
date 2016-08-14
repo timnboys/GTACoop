@@ -37,6 +37,10 @@ namespace GTAServer.ServerRemoting
             Command = command;
             CommandArguments = commandArguments;
         }
+
+        public RemotingPacket()
+        {
+        }
     }
 
     /// <summary>
