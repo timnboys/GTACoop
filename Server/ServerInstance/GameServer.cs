@@ -16,7 +16,7 @@ using mscoree;
 using MaxMind.GeoIP2;
 using ProtoBuf;
 
-namespace GTAServer.GameServer
+namespace GTAServer.ServerInstance
 {
     /// <summary>
     /// Another version of the ChatData class?

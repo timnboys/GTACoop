@@ -8,7 +8,7 @@ using System.Xml.Serialization;
 using GTA;
 using GTA.Native;
 using GTAServer;
-using GTAServer.GameServer;
+using GTAServer.ServerInstance;
 using Lidgren.Network;
 using ProtoBuf;
 

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace GTAServer.GameServer
+namespace GTAServer.ServerInstance
 {
     public class InstanceSettings
     {

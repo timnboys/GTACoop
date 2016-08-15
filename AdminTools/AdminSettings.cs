@@ -1,4 +1,4 @@
-﻿using GTAServer.GameServer;
+﻿using GTAServer.ServerInstance;
 
 namespace AdminTools
 {

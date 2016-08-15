@@ -7,6 +7,7 @@ using System.Runtime.Remoting;
 using System.Security.Policy;
 using System.Threading;
 using System.Xml.Serialization;
+using GTAServer.ServerInstance;
 using log4net;
 using log4net.Config;
 

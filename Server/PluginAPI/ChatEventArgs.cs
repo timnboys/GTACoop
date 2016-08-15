@@ -7,9 +7,8 @@ using GTAServer.ServerInstance;
 
 namespace GTAServer.PluginAPI
 {
-    public interface IPlugin
+    public class ChatEventArgs : EventArgs
     {
-        void Start(GameServer server, PluginEventManager eventManager);
-        void Stop();
+        public ChatData ChatData;
     }
 }

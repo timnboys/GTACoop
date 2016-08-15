@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using GTAServer.ServerInstance;
 using log4net;
 using log4net.Core;
 using Lidgren.Network;

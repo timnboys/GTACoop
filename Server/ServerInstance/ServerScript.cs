@@ -1,4 +1,4 @@
-﻿namespace GTAServer.GameServer
+﻿namespace GTAServer.ServerInstance
 {
     /// <summary>
     /// ServerScript class used for server-side scripting.
