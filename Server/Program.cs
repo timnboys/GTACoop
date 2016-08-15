@@ -43,6 +43,7 @@ namespace GTAServer
         /// </summary>
         public static bool AllowOutdatedClients = false;
 
+        public static InstanceSettings Settings;
         /// <summary>
         /// Delete a file
         /// </summary>
@@ -61,21 +62,19 @@ namespace GTAServer
         private static InstanceSettings ReadSettings(string path)
         {
             var ser = new XmlSerializer(typeof(InstanceSettings));
-
-            InstanceSettings settings = null;
             Log.Debug(path);
             if (File.Exists(path))
             {
-                using (var stream = File.OpenRead(path)) settings = (InstanceSettings)ser.Deserialize(stream);
-                using (var stream = new FileStream(path, File.Exists(path) ? FileMode.Truncate : FileMode.Create, FileAccess.ReadWrite)) ser.Serialize(stream, settings);
+                using (var stream = File.OpenRead(path)) Settings = (InstanceSettings)ser.Deserialize(stream);
+                using (var stream = new FileStream(path, File.Exists(path) ? FileMode.Truncate : FileMode.Create, FileAccess.ReadWrite)) ser.Serialize(stream, Settings);
             }
             else
             {
                 Log.Debug("No settings.xml found, creating a new one.");
-                using (var stream = File.OpenWrite(path)) ser.Serialize(stream, settings = new InstanceSettings());
+                using (var stream = File.OpenWrite(path)) ser.Serialize(stream, Settings = new InstanceSettings());
             }
             //LogToConsole(1, false, "FILE", "Settings loaded from " + path);
-            return settings;
+            return Settings;
         }
 
         public static InstanceSettings GlobalSettings;
@@ -153,6 +152,20 @@ namespace GTAServer
                 curServer.LoadFilterscript(script);
             }
             Log.Info("Server " + settings.Handle + " is now finished starting.");
+        }
+
+        public static void StopServer(string handle)
+        {
+            Log.Info("Stopping server " + handle);
+            if (!VirtualServers.ContainsKey(handle)) return;
+            VirtualServers[handle].Stop();
+            VirtualServerThreads[handle].Abort();
+            AppDomain.Unload(VirtualServerDomains[handle]);
+            VirtualServerHandles.Remove(handle);
+            VirtualServerDomains.Remove(handle);
+            VirtualServerThreads.Remove(handle);
+            VirtualServers.Remove(handle);
+            Log.Info("Server stopped: " + handle);
         }
     }
 }

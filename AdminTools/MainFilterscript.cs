@@ -12,6 +12,7 @@ using GTAServer;
 //using Lidgren.Network;
 using System.Drawing;
 using System.Globalization;
+using GTAServer.GameServer;
 
 namespace AdminTools
 {

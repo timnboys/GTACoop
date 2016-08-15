@@ -38,8 +38,17 @@ namespace ServerRemotingClient
             message.Write(data.Length);
             message.Write(data);
             client.SendMessage(message, NetDeliveryMethod.ReliableOrdered);
-            Thread.Sleep(1000);
-            return null;
+            while (true)
+            {
+                NetIncomingMessage msg;
+                while ((msg = client.ReadMessage()) != null)
+                {
+                    if (msg.MessageType != NetIncomingMessageType.Data) continue;
+                    var len = msg.ReadInt32();
+                    var recvData = (RemotingResponse) DeserializeBinary<RemotingResponse>(msg.ReadBytes(len));
+                    return recvData;
+                }
+            }
         }
     }
 }

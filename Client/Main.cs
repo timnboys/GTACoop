@@ -17,6 +17,7 @@ using Control = GTA.Control;
 using GTAServer;
 using System.Text.RegularExpressions;
 using System.Globalization;
+using GTAServer.GameServer;
 using MaxMind.GeoIP2;
 using MaxMind.GeoIP2.Model;
 

@@ -1,6 +1,4 @@
-﻿using Lidgren.Network;
-
-namespace GTAServer
+﻿namespace GTAServer.GameServer
 {
     /// <summary>
     /// ServerScript class used for server-side scripting.

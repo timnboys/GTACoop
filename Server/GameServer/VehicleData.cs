@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using ProtoBuf;
 
-namespace GTAServer
+namespace GTAServer.GameServer
 {
     /// <summary>
     /// Server packet types

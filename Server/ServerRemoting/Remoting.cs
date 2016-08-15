@@ -15,10 +15,14 @@ namespace GTAServer.ServerRemoting
     {
         private ILog Log;
         private readonly NetServer _server;
+        private readonly InstanceSettings _settings;
+        public Dictionary<string, IRemoteCommand> Commands = new Dictionary<string, IRemoteCommand>();
+
         public Remoting(int port)
         {
             var config = new NetPeerConfiguration("GTAServerRcon") { Port = port };
             _server = new NetServer(config);
+            _settings = Program.GlobalSettings;
             Log = LogManager.GetLogger("Remoting");
         }
 
@@ -27,6 +31,8 @@ namespace GTAServer.ServerRemoting
         /// </summary>
         public void Start()
         {
+            Commands.Add("server.start", new ServerStartCommand());
+            Commands.Add("server.stop", new ServerStopCommand());
             _server.Start();
         }
 
@@ -90,7 +96,37 @@ namespace GTAServer.ServerRemoting
                     case NetIncomingMessageType.Data:
                         var len = msg.ReadInt32();
                         var data = (RemotingPacket)DeserializeBinary<RemotingPacket>(msg.ReadBytes(len));
-                        Log.Info("Received a new RemotingPacket, command: " + data.Command);
+                        RemotingResponse reply;
+                        if (data.Username == _settings.RemoteUser && data.Password == _settings.RemotePassword)
+                        {
+                            if (!Commands.ContainsKey(data.Command))
+                            {
+                                reply = new RemotingResponse()
+                                {
+                                    message = "Command not found",
+                                    status = false
+                                };
+                            }
+                            else
+                            {
+                                reply = Commands[data.Command].OnCommandRun(data.CommandArguments);
+                            }
+
+                        }
+                        else
+                        {
+                            Log.Warn("Unknown username/password on remoting socket.");
+                            reply = new RemotingResponse()
+                            {
+                                message = "Bad username/password.",
+                                status = false
+                            };
+                        }
+                        var serreply = SerializeBinary(reply);
+                        var message = _server.CreateMessage();
+                        message.Write(serreply.Length);
+                        message.Write(serreply);
+                        _server.SendMessage(message, msg.SenderConnection, NetDeliveryMethod.ReliableOrdered);
                         break;
                     default:
                         Log.Warn("Unknown message received: " + msg.MessageType);

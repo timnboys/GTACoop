@@ -1,4 +1,6 @@
-﻿namespace AdminTools
+﻿using GTAServer.GameServer;
+
+namespace AdminTools
 {
     public class AdminSettings
     {
@@ -10,7 +12,7 @@
         public int MaxPing { get; set; }
         public bool AntiClones { get; set; }
         public bool KickOnDifferentScript { get; set; }
-        public GTAServer.ScriptVersion NeededScriptVersion { get; set; }
+        public ScriptVersion NeededScriptVersion { get; set; }
         public bool KickOnOutdatedGame { get; set; }
         public int MinGameVersion { get; set; }
         public bool ColoredNicknames { get; set; }
@@ -36,7 +38,7 @@ public string[] BlackList { get; set; }*/
             MaxPing = 250;
             AntiClones = true;
             KickOnDifferentScript = true;
-            NeededScriptVersion = GTAServer.ScriptVersion.VERSION_0_9_3;
+            NeededScriptVersion = ScriptVersion.VERSION_0_9_3;
             KickOnOutdatedGame = false;
             MinGameVersion = 25;
             ColoredNicknames = true;

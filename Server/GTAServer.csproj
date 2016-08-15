@@ -95,8 +95,11 @@
     <Compile Include="CallbackToManager.cs" />
     <Compile Include="ChatData.cs" />
     <Compile Include="GameServer.cs" />
+    <Compile Include="ServerRemoting\IRemoteCommand.cs" />
     <Compile Include="ServerRemoting\Remoting.cs" />
     <Compile Include="ServerRemoting\RemotingPacket.cs" />
+    <Compile Include="ServerRemoting\ServerStartCommand.cs" />
+    <Compile Include="ServerRemoting\ServerStopCommand.cs" />
     <Compile Include="ServerScript.cs" />
     <Compile Include="NativeData.cs" />
     <Compile Include="Program.cs" />

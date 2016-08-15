@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 using GTAServer;
+using GTAServer.GameServer;
 
 namespace Race
 {

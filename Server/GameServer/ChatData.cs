@@ -1,6 +1,6 @@
 ﻿using ProtoBuf;
 
-namespace GTAServer
+namespace GTAServer.GameServer
 {
     /// <summary>
     /// Class containing data for each chat message.

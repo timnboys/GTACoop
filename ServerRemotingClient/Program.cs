@@ -110,7 +110,9 @@ namespace ServerRemotingClient
             var options = new Options();
             if (CommandLine.Parser.Default.ParseArguments(args, options))
             {
-                RemoteCommandSender.SendCommand(options.Host, options.Port, options.User, options.Password, options.Command, (options.ArgList as List<string>));
+                var remoteReply = RemoteCommandSender.SendCommand(options.Host, options.Port, options.User, options.Password, options.Command, (options.ArgList as List<string>));
+                Console.WriteLine("Status: " + remoteReply.status);
+                Console.WriteLine("Message: " + remoteReply.message);
             }
         }
     }

@@ -1,21 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
-using System.Text;
-using System.Threading;
-using Lidgren.Network;
-using ProtoBuf;
-using System.Text.RegularExpressions;
-using MaxMind.GeoIP2;
 using System.Security.Principal;
-using System.Diagnostics;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading;
 using log4net;
 using log4net.Config;
+using Lidgren.Network;
 using mscoree;
-namespace GTAServer
+using MaxMind.GeoIP2;
+using ProtoBuf;
+
+namespace GTAServer.GameServer
 {
     /// <summary>
     /// Another version of the ChatData class?

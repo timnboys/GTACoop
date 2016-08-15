@@ -1,15 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
 
-namespace GTAServer
+namespace GTAServer.GameServer
 {
     public class InstanceSettings
     {
         public ServerSettings[] Servers;
-
+        public string RemoteUser;
+        public string RemotePassword;
         public InstanceSettings()
         {
             Servers = new ServerSettings[] {new ServerSettings()};
+            RemoteUser = "admin";
+            RemotePassword = "password";
         }
     }
 
