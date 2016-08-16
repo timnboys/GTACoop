@@ -124,7 +124,7 @@ namespace GTAServer
             var domain = VirtualServerDomains[settings.Handle];
             
             VirtualServerHandles[settings.Handle] = domain.CreateInstanceFrom(new Uri(Assembly.GetExecutingAssembly().CodeBase).LocalPath,
-                "GTAServer.GameServer");
+                "GTAServer.ServerInstance.GameServer");
             var handle = VirtualServerHandles[settings.Handle];
             VirtualServers[settings.Handle] = (GameServer)handle.Unwrap();
             var curServer = VirtualServers[settings.Handle];
@@ -142,6 +142,7 @@ namespace GTAServer
             curServer.ConfigureServer();
             curServer.SetupLogger();
             curServer.SetupCallback();
+            curServer.LoadPlugin("TestPlugin.dll");
             Log.Info("Finished configuring server: " + settings.Handle + ", starting.");
             VirtualServerThreads[settings.Handle] = new Thread(curServer.StartAndRunMainLoop);
             VirtualServerThreads[settings.Handle].Start();

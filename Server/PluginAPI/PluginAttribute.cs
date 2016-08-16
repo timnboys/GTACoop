@@ -3,15 +3,15 @@
 namespace GTAServer.PluginAPI
 {
     [AttributeUsage(AttributeTargets.Class)]
-    class PluginAttribute : System.Attribute
+    public class PluginAttribute : System.Attribute
     {
-        private string _name;
-        private string _desc;
+        public string Name;
+        public string Desc;
 
         public PluginAttribute(string name, string desc)
         {
-            _name = name;
-            _desc = desc;
+            Name = name;
+            Desc = desc;
         }
     }
 }

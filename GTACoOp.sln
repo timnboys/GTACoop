@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lidgren.Network", "lidgren.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServerRemotingClient", "ServerRemotingClient\ServerRemotingClient.csproj", "{777276BD-31D1-4B35-BDAF-601E754A2871}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestPlugin", "TestPlugin\TestPlugin.csproj", "{A1B2280C-725B-483F-BE78-1F4235D9E084}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +47,10 @@ Global
 		{777276BD-31D1-4B35-BDAF-601E754A2871}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{777276BD-31D1-4B35-BDAF-601E754A2871}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{777276BD-31D1-4B35-BDAF-601E754A2871}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1B2280C-725B-483F-BE78-1F4235D9E084}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1B2280C-725B-483F-BE78-1F4235D9E084}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1B2280C-725B-483F-BE78-1F4235D9E084}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1B2280C-725B-483F-BE78-1F4235D9E084}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

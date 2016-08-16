@@ -9,6 +9,7 @@ using System.Security.Principal;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using GTAServer.PluginAPI;
 using log4net;
 using log4net.Config;
 using Lidgren.Network;
@@ -437,6 +438,10 @@ namespace GTAServer.ServerInstance
         public CallbackToManager ServerManagerCallback;
 
         /// <summary>
+        /// Dictionary containing all the plugins for the server
+        /// </summary>
+        public Dictionary<string,IPlugin> ServerPlugins;
+        /// <summary>
         /// Sets all the config stuff for the server.
         /// Note - You must call this after any update to the config object.
         /// </summary>
@@ -486,6 +491,7 @@ namespace GTAServer.ServerInstance
                    "GTAServer.CallbackToManager").Unwrap();
             ServerManagerCallback.StartHook(InternalName);
         }
+
         /// <summary>
         /// Start a game server with no filterscripts loaded.
         /// </summary>
@@ -493,6 +499,40 @@ namespace GTAServer.ServerInstance
         {
             Start(new string[] {});
 
+        }
+
+        public List<IPlugin> LoadPlugin(string pluginFilename)
+        {
+            var pluginList = new List<IPlugin>();
+            var asm = Assembly.LoadFile("plugins/" + pluginFilename);
+            var types = asm.GetExportedTypes();
+            var validTypes = types.Where(t => !t.IsInterface && !t.IsAbstract);
+            validTypes = validTypes.Where(t =>
+            {
+                var attributes = t.GetCustomAttributes(true);
+                foreach (var attrib in attributes)
+                {
+                    try
+                    {
+                        var pluginAttrib = (PluginAPI.PluginAttribute) attrib;
+                        if (pluginAttrib.Name.Length != 0) return true;
+                    }
+                    catch
+                    {
+                        // Catch ignored, if we return false here then we stop 
+                        // going through the rest of the attributes on the class
+                        // which may keep us from hittnig a PluginAttribute
+                    }
+                }
+                return false;
+            });
+            validTypes = validTypes.Where(t => typeof(IPlugin).IsAssignableFrom(t));
+            var enumerable = validTypes as IList<Type> ?? validTypes.ToList();
+            if (enumerable.Any())
+            {
+                pluginList.AddRange(enumerable.Select(Activator.CreateInstance).OfType<IPlugin>());
+            }
+            return pluginList;
         }
 
         /// <summary>
