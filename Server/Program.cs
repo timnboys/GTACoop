@@ -63,7 +63,7 @@ namespace GTAServer
         private static InstanceSettings ReadSettings(string path)
         {
             var ser = new XmlSerializer(typeof(InstanceSettings));
-            Log.Debug(path);
+            Log.Warn("WARNING! Debug build, sandboxing not enabled!");
             if (File.Exists(path))
             {
                 using (var stream = File.OpenRead(path)) Settings = (InstanceSettings)ser.Deserialize(stream);
@@ -122,12 +122,17 @@ namespace GTAServer
             }
             VirtualServerDomains[settings.Handle]=AppDomain.CreateDomain(settings.Handle);
             var domain = VirtualServerDomains[settings.Handle];
-            
+#if DEBUG
+            // Have to do this because ReSharper didn't pick up on the #if/#else/#endif...
+            // ReSharper disable once UseObjectOrCollectionInitializer
+            var curServer = new GameServer();
+#else
             VirtualServerHandles[settings.Handle] = domain.CreateInstanceFrom(new Uri(Assembly.GetExecutingAssembly().CodeBase).LocalPath,
                 "GTAServer.ServerInstance.GameServer");
             var handle = VirtualServerHandles[settings.Handle];
             VirtualServers[settings.Handle] = (GameServer)handle.Unwrap();
             var curServer = VirtualServers[settings.Handle];
+#endif
             curServer.Name = settings.Name;
             curServer.MaxPlayers = settings.MaxPlayers;
             curServer.Port = settings.Port;
@@ -162,9 +167,13 @@ namespace GTAServer
             if (!VirtualServers.ContainsKey(handle)) return;
             VirtualServers[handle].Stop();
             VirtualServerThreads[handle].Abort();
+#if DEBUG
+            Log.Debug("Debug build, no appdomain to unload.");
+#else
             AppDomain.Unload(VirtualServerDomains[handle]);
-            VirtualServerHandles.Remove(handle);
             VirtualServerDomains.Remove(handle);
+#endif
+            VirtualServerHandles.Remove(handle);
             VirtualServerThreads.Remove(handle);
             VirtualServers.Remove(handle);
             Log.Info("Server stopped: " + handle);

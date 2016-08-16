@@ -16,6 +16,7 @@ using Lidgren.Network;
 using mscoree;
 using MaxMind.GeoIP2;
 using ProtoBuf;
+using PluginAttribute = GTAServer.PluginAPI.PluginAttribute;
 
 namespace GTAServer.ServerInstance
 {
@@ -501,38 +502,26 @@ namespace GTAServer.ServerInstance
 
         }
 
-        public List<IPlugin> LoadPlugin(string pluginFilename)
+        public Dictionary<string, IPlugin> LoadPlugin(string pluginFilename)
         {
-            var pluginList = new List<IPlugin>();
-            var asm = Assembly.LoadFile("plugins/" + pluginFilename);
+            var pluginDict = new Dictionary<string, IPlugin>();
+            var asm = Assembly.LoadFile(Location + "plugins" + Path.DirectorySeparatorChar + pluginFilename);
             var types = asm.GetExportedTypes();
             var validTypes = types.Where(t => !t.IsInterface && !t.IsAbstract);
-            validTypes = validTypes.Where(t =>
-            {
-                var attributes = t.GetCustomAttributes(true);
-                foreach (var attrib in attributes)
-                {
-                    try
-                    {
-                        var pluginAttrib = (PluginAPI.PluginAttribute) attrib;
-                        if (pluginAttrib.Name.Length != 0) return true;
-                    }
-                    catch
-                    {
-                        // Catch ignored, if we return false here then we stop 
-                        // going through the rest of the attributes on the class
-                        // which may keep us from hittnig a PluginAttribute
-                    }
-                }
-                return false;
-            });
+            validTypes = validTypes.Where(t => ((PluginAttribute)Attribute.GetCustomAttribute(t, typeof(PluginAttribute)) != null));
             validTypes = validTypes.Where(t => typeof(IPlugin).IsAssignableFrom(t));
-            var enumerable = validTypes as IList<Type> ?? validTypes.ToList();
-            if (enumerable.Any())
+            var typeList = validTypes as IList<Type> ?? validTypes.ToList();
+            if (!typeList.Any()) return new Dictionary<string, IPlugin>();
+            foreach (var type in typeList)
             {
-                pluginList.AddRange(enumerable.Select(Activator.CreateInstance).OfType<IPlugin>());
+                var obj = Activator.CreateInstance(type) as IPlugin;
+                if (obj == null) continue;
+                var pluginInfo =
+                    (PluginAttribute) Attribute.GetCustomAttribute(type, typeof(PluginAttribute));
+                obj.Start(this, new PluginEventManager(pluginInfo.Name));
+                pluginDict.Add(pluginInfo.Name, obj);
             }
-            return pluginList;
+            return pluginDict;
         }
 
         /// <summary>
