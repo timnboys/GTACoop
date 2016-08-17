@@ -64,6 +64,7 @@ namespace GTAServer
         {
             var ser = new XmlSerializer(typeof(InstanceSettings));
             Log.Warn("WARNING! Debug build, sandboxing not enabled!");
+            Log.Warn("It is advised to only run a single server instance!");
             if (File.Exists(path))
             {
                 using (var stream = File.OpenRead(path)) Settings = (InstanceSettings)ser.Deserialize(stream);
@@ -147,7 +148,7 @@ namespace GTAServer
             curServer.ConfigureServer();
             curServer.SetupLogger();
             curServer.SetupCallback();
-            curServer.LoadPlugin("TestPlugin.dll");
+            curServer.LoadPlugin("TestPlugin");
             Log.Info("Finished configuring server: " + settings.Handle + ", starting.");
             VirtualServerThreads[settings.Handle] = new Thread(curServer.StartAndRunMainLoop);
             VirtualServerThreads[settings.Handle].Start();

@@ -495,7 +495,7 @@ namespace GTAServer.ServerInstance
         }
 
         /// <summary>
-        /// Start a game server with no filterscripts loaded.
+        /// Start a game server with no filterscripts or plugins loaded.
         /// </summary>
         public void Start()
         {
@@ -503,10 +503,14 @@ namespace GTAServer.ServerInstance
 
         }
 
+        public void LoadPlugins(List<string> plugins)
+        {
+            foreach (var plugin in plugins) LoadPlugin(plugin);
+        }
         public Dictionary<string, IPlugin> LoadPlugin(string pluginFilename)
         {
             var pluginDict = new Dictionary<string, IPlugin>();
-            var asm = Assembly.LoadFile(Location + "plugins" + Path.DirectorySeparatorChar + pluginFilename);
+            var asm = Assembly.LoadFile(Location + "plugins" + Path.DirectorySeparatorChar + pluginFilename + ".dll");
             var types = asm.GetExportedTypes();
             var validTypes = types.Where(t => !t.IsInterface && !t.IsAbstract);
             validTypes = validTypes.Where(t => ((PluginAttribute)Attribute.GetCustomAttribute(t, typeof(PluginAttribute)) != null));
