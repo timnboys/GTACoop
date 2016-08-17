@@ -38,7 +38,7 @@ namespace GTAServer.ServerInstance
         /// If the message is private
         /// Note: ReSharper is suggesting IsPrivate as a property name
         /// </summary>
-        public bool isPrivate { get; set; }
+        public bool IsPrivate { get; set; }
         /// <summary>
         /// Contents of message
         /// </summary>
@@ -108,9 +108,8 @@ namespace GTAServer.ServerInstance
         public bool IsInVehicle { get; internal set; }
         /// <summary>
         /// If the player is AFK
-        /// Note: ReSharper is suggesting 'Afk' as a method name'
         /// </summary>
-        public bool afk { get; set; }
+        public bool Afk { get; set; }
         /// <summary>
         /// If they got kicked
         /// </summary>
@@ -168,6 +167,7 @@ namespace GTAServer.ServerInstance
         /// <summary>
         /// RP icon
         /// </summary>
+        // ReSharper disable once InconsistentNaming
         RP_Icon = 8,
         /// <summary>
         /// Dollar sign icon
@@ -442,6 +442,7 @@ namespace GTAServer.ServerInstance
         /// Dictionary containing all the plugins for the server
         /// </summary>
         public Dictionary<string,IPlugin> ServerPlugins;
+
         /// <summary>
         /// Sets all the config stuff for the server.
         /// Note - You must call this after any update to the config object.
@@ -668,11 +669,12 @@ namespace GTAServer.ServerInstance
                 !t.IsInterface &&
                 !t.IsAbstract)
                 .Where(t => typeof(ServerScript).IsAssignableFrom(t));
-            if (!validTypes.Any())
+            var validTypeList = validTypes as IList<Type> ?? validTypes.ToList();
+            if (!validTypeList.Any())
             {
                 yield break;
             }
-            foreach (var type in validTypes)
+            foreach (var type in validTypeList)
             {
                 var obj = Activator.CreateInstance(type) as ServerScript;
                 if (obj != null)
@@ -737,16 +739,14 @@ namespace GTAServer.ServerInstance
                     Client client = null;
                     lock (Clients)
                     {
-                        foreach (Client c in Clients)
+                        foreach (var c in Clients)
                         {
-                            if (c != null && c.NetConnection != null &&
-                                c.NetConnection.RemoteUniqueIdentifier != 0 &&
-                                msg.SenderConnection != null &&
-                                c.NetConnection.RemoteUniqueIdentifier == msg.SenderConnection.RemoteUniqueIdentifier)
-                            {
-                                client = c;
-                                break;
-                            }
+                            if (c == null || c.NetConnection == null || c.NetConnection.RemoteUniqueIdentifier == 0 ||
+                                msg.SenderConnection == null ||
+                                c.NetConnection.RemoteUniqueIdentifier != msg.SenderConnection.RemoteUniqueIdentifier)
+                                continue;
+                            client = c;
+                            break;
                         }
                     }
 
@@ -807,11 +807,11 @@ namespace GTAServer.ServerInstance
                             Console.Write("\n");
                             if (!AllowOutdatedClients && (ScriptVersion)connReq.ScriptVersion != Enum.GetValues(typeof(ScriptVersion)).Cast<ScriptVersion>().Last())
                             {
-                                var ReadableScriptVersion = Enum.GetValues(typeof(ScriptVersion)).Cast<ScriptVersion>().Last().ToString();
-                                ReadableScriptVersion = Regex.Replace(ReadableScriptVersion, "VERSION_", "", RegexOptions.IgnoreCase);
-                                ReadableScriptVersion = Regex.Replace(ReadableScriptVersion, "_", ".", RegexOptions.IgnoreCase);
+                                var readableScriptVersion = Enum.GetValues(typeof(ScriptVersion)).Cast<ScriptVersion>().Last().ToString();
+                                readableScriptVersion = Regex.Replace(readableScriptVersion, "VERSION_", "", RegexOptions.IgnoreCase);
+                                readableScriptVersion = Regex.Replace(readableScriptVersion, "_", ".", RegexOptions.IgnoreCase);
                                 Log.Info("Client " + connReq.DisplayName + " tried to connect with outdated scriptversion " + connReq.ScriptVersion.ToString() + " but the server requires " + Enum.GetValues(typeof(ScriptVersion)).Cast<ScriptVersion>().Last().ToString());
-                                DenyPlayer(client, string.Format("Update to GTACoop v{0} from bit.ly/gtacoop", ReadableScriptVersion), true, msg); continue;
+                                DenyPlayer(client, $"Update to GTACoop v{readableScriptVersion} from bit.ly/gtacoop", true, msg); continue;
                             }else if (AllowOutdatedClients && (ScriptVersion)connReq.ScriptVersion != Enum.GetValues(typeof(ScriptVersion)).Cast<ScriptVersion>().Last())
                             {
                                 SendNotificationToPlayer(client, "~r~You are using a outdated version of GTA Coop.~w~");
@@ -823,7 +823,7 @@ namespace GTAServer.ServerInstance
                                 DenyPlayer(client, "Unknown version. Please redownload GTA Coop from bit.ly/gtacoop", true, msg); continue;
                             }
 
-                            int clients = 0;
+                            var clients = 0;
                             lock (Clients) clients = Clients.Count;
                             if (clients < MaxPlayers)
                             {
@@ -855,8 +855,8 @@ namespace GTAServer.ServerInstance
                                 if (client.GameVersion != connReq.GameVersion) client.GameVersion = connReq.GameVersion;
                                 PrintPlayerInfo(client, "New incoming connection: ");
 
-                                if (_gamemode != null) _gamemode.OnIncomingConnection(client);
-                                if (_filterscripts != null) _filterscripts.ForEach(fs => fs.OnIncomingConnection(client));
+                                _gamemode?.OnIncomingConnection(client);
+                                _filterscripts?.ForEach(fs => fs.OnIncomingConnection(client));
 
                                 var channelHail = Server.CreateMessage();
                                 channelHail.Write(GetChannelIdForConnection(client));
@@ -873,7 +873,7 @@ namespace GTAServer.ServerInstance
 
                             if (newStatus == NetConnectionStatus.Connected)
                             {
-                                bool sendMsg = true;
+                                var sendMsg = true;
 
                                 Console.ForegroundColor = ConsoleColor.DarkGreen; PrintPlayerInfo(client, "Connected: "); Console.ResetColor();
                                 var path = Location + "geoip.mmdb";
@@ -967,12 +967,14 @@ namespace GTAServer.ServerInstance
                             }
                             break;
                         case NetIncomingMessageType.DiscoveryRequest:
-                            NetOutgoingMessage response = Server.CreateMessage();
-                            var obj = new DiscoveryResponse();
-                            obj.ServerName = Name;
-                            obj.MaxPlayers = MaxPlayers;
-                            obj.PasswordProtected = PasswordProtected;
-                            obj.Gamemode = GamemodeName;
+                            var response = Server.CreateMessage();
+                            var obj = new DiscoveryResponse
+                            {
+                                ServerName = Name,
+                                MaxPlayers = MaxPlayers,
+                                PasswordProtected = PasswordProtected,
+                                Gamemode = GamemodeName
+                            };
                             lock (Clients) obj.PlayerCount = Clients.Count;
                             obj.Port = Port;
 
@@ -1157,8 +1159,8 @@ namespace GTAServer.ServerInstance
                                     break;
                                 case PacketType.PlayerSpawned:
                                     {
-                                        if (_gamemode != null) _gamemode.OnPlayerSpawned(client);
-                                        if (_filterscripts != null) _filterscripts.ForEach(fs => fs.OnPlayerSpawned(client));
+                                        _gamemode?.OnPlayerSpawned(client);
+                                        _filterscripts?.ForEach(fs => fs.OnPlayerSpawned(client));
                                         PrintPlayerInfo(client, "Player spawned: ");
                                     }
                                     break;
@@ -1170,8 +1172,8 @@ namespace GTAServer.ServerInstance
                     }
                     Server.Recycle(msg);
                 }
-                if (_gamemode != null) _gamemode.OnTick();
-                if (_filterscripts != null) _filterscripts.ForEach(fs => fs.OnTick());
+                _gamemode?.OnTick();
+                _filterscripts?.ForEach(fs => fs.OnTick());
             }catch(Exception ex) { Log.Error("Can't handle tick: "+ex.ToString()); }
         }
 
@@ -1249,7 +1251,7 @@ namespace GTAServer.ServerInstance
         /// </summary>
         public void Stop()
         {
-            foreach (Client player in Clients)
+            foreach (var player in Clients)
             {
                 KickPlayer(player, "Server shutting down");
             }
@@ -1267,7 +1269,7 @@ namespace GTAServer.ServerInstance
             try
             {
                 var data = SerializeBinary(newData);
-                NetOutgoingMessage msg = Server.CreateMessage();
+                var msg = Server.CreateMessage();
                 msg.Write((int) packetType);
                 msg.Write(data.Length);
                 msg.Write(data);
@@ -1290,7 +1292,7 @@ namespace GTAServer.ServerInstance
         public void SendToAll(object newData, PacketType packetType, bool important, Client exclude)
         {
             var data = SerializeBinary(newData);
-            NetOutgoingMessage msg = Server.CreateMessage();
+            var msg = Server.CreateMessage();
             msg.Write((int)packetType);
             msg.Write(data.Length);
             msg.Write(data);
@@ -1466,9 +1468,11 @@ namespace GTAServer.ServerInstance
             };
 
 
-            var wrapper = new NativeTickCall();
-            wrapper.Identifier = identifier;
-            wrapper.Native = obj;
+            var wrapper = new NativeTickCall
+            {
+                Identifier = identifier,
+                Native = obj
+            };
 
             var bin = SerializeBinary(wrapper);
 
@@ -1638,7 +1642,7 @@ namespace GTAServer.ServerInstance
         /// <summary>
         /// List of callbacks for data returned from native calls
         /// </summary>
-        private Dictionary<string, Action<object>> _callbacks = new Dictionary<string, Action<object>>();
+        private readonly Dictionary<string, Action<object>> _callbacks = new Dictionary<string, Action<object>>();
 
         /// <summary>
         /// Run a native on a player, then get the response
@@ -1725,7 +1729,7 @@ namespace GTAServer.ServerInstance
 
             var data = SerializeBinary(chatObj);
 
-            NetOutgoingMessage msg = Server.CreateMessage();
+            var msg = Server.CreateMessage();
             msg.Write((int)PacketType.ChatData);
             msg.Write(data.Length);
             msg.Write(data);
@@ -1779,7 +1783,7 @@ namespace GTAServer.ServerInstance
             if (!silent)
                 SendNotificationToAll(player.DisplayName + " was rejected by the server: " + reason);
             
-            string _ip = player.NetConnection.RemoteEndPoint.Address.ToString();
+            var ip = player.NetConnection.RemoteEndPoint.Address.ToString();
             Clients.Remove(player);
             if (msg != null) Server.Recycle(msg);
             //BlockIP(_ip, "GTAServer Block (" + _ip + ")", duration);
@@ -1846,7 +1850,7 @@ namespace GTAServer.ServerInstance
         /// <param name="flashing">Whether to flash the notification</param>
         public void SendNotificationToPlayer(Client player, string message, bool flashing = false)
         {
-            for (int i = 0; i < message.Length; i += 99)
+            for (var i = 0; i < message.Length; i += 99)
             {
                 SendNativeCallToPlayer(player, 0x202709F4C58A0424, "STRING");
                 SendNativeCallToPlayer(player, 0x6C188BE134E074AA, message.Substring(i, Math.Min(99, message.Length - i)));
@@ -1860,7 +1864,7 @@ namespace GTAServer.ServerInstance
         /// <param name="flashing">Whether to flash the notification</param>
         public void SendNotificationToAll(string message, bool flashing = false)
         {
-            for (int i = 0; i < message.Length; i += 99)
+            for (var i = 0; i < message.Length; i += 99)
             {
                 SendNativeCallToAllPlayers(0x202709F4C58A0424, "STRING");
                 SendNativeCallToAllPlayers(0x6C188BE134E074AA, message.Substring(i, Math.Min(99, message.Length - i)));
@@ -2001,12 +2005,12 @@ namespace GTAServer.ServerInstance
             if (string.IsNullOrEmpty(port)) { port = Port.ToString(); }
             if (duration != -1)
             {
-                cmdExec(null, "advfirewall firewall add rule name=\""+name+ "\" description=\"Block inbound traffic from " + ip+" over UDP port "+port+" for "+(duration).ToString()+ " seconds.\" dir=in interface=any action=block protocol=udp localport=" + port+" remoteip="+ip, "netsh.exe", true);
-                cmdExec(null, "ping 127.0.0.1 - n " + (duration + 1).ToString() + " > nul & netsh advfirewall firewall delete rule name = all dir =in protocol = udp localport = " + port + " remoteip = " + ip, "cmd.exe");
+                CmdExec(null, "advfirewall firewall add rule name=\""+name+ "\" description=\"Block inbound traffic from " + ip+" over UDP port "+port+" for "+(duration).ToString()+ " seconds.\" dir=in interface=any action=block protocol=udp localport=" + port+" remoteip="+ip, "netsh.exe", true);
+                CmdExec(null, "ping 127.0.0.1 - n " + (duration + 1).ToString() + " > nul & netsh advfirewall firewall delete rule name = all dir =in protocol = udp localport = " + port + " remoteip = " + ip, "cmd.exe");
                 LogToConsole(2, false, "Firewall", "Blocked " + ip + " for "+duration+ " seconds!");
             }
             else {
-                cmdExec("netsh advfirewall firewall add rule name=\"" +name +"\" description=\"Block inbound traffic from "+ip+" over UDP port "+port+"\" dir=in interface=any action=block localport="+port+" remoteip="+ip);
+                CmdExec("netsh advfirewall firewall add rule name=\"" +name +"\" description=\"Block inbound traffic from "+ip+" over UDP port "+port+"\" dir=in interface=any action=block localport="+port+" remoteip="+ip);
                 LogToConsole(2, false, "Firewall", "Blocked " + ip + " permanently!");
             }
         }
@@ -2039,17 +2043,18 @@ namespace GTAServer.ServerInstance
         /// <param name="arg">Command arguments</param>
         /// <param name="app">Application to run the command in (default: cmd.exe)</param>
         /// <param name="waitForExit">Wait for the command to exit</param>
-        public static void cmdExec(string exec, string arg = null, string app = @"C:\Windows\System32\cmd.exe", bool waitForExit = false)
+        public static void CmdExec(string exec, string arg = null, string app = @"C:\Windows\System32\cmd.exe", bool waitForExit = false)
         {
-            ProcessStartInfo cmdStartInfo = new ProcessStartInfo();
-            cmdStartInfo.FileName = app;
+            var cmdStartInfo = new ProcessStartInfo
+            {
+                FileName = app,
+                RedirectStandardOutput = true,
+                RedirectStandardInput = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
             if (!string.IsNullOrEmpty(arg)) { cmdStartInfo.Arguments = arg; }
-            cmdStartInfo.RedirectStandardOutput = true;
-            cmdStartInfo.RedirectStandardInput = true;
-            cmdStartInfo.UseShellExecute = false;
-            cmdStartInfo.CreateNoWindow = true;
-            Process cmdProcess = new Process();
-            cmdProcess.StartInfo = cmdStartInfo;
+            var cmdProcess = new Process {StartInfo = cmdStartInfo};
             /*using (var process = cmdProcess.Start())
             {
                 process.WaitForExit();
@@ -2069,19 +2074,19 @@ namespace GTAServer.ServerInstance
         /// <param name="exec">Command to run</param>
         /// <param name="arg">Arguments to command</param>
         /// <param name="app">Application to run the command in (default: cmd.exe)</param>
-        public static void ReadFromCMD(string exec, string arg = null, string app = @"C:\Windows\System32\cmd.exe")
+        public static void ReadFromCmd(string exec, string arg = null, string app = @"C:\Windows\System32\cmd.exe")
         {
-            ProcessStartInfo cmdStartInfo = new ProcessStartInfo();
-            cmdStartInfo.FileName = app;
+            var cmdStartInfo = new ProcessStartInfo
+            {
+                FileName = app,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                RedirectStandardInput = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
             if (!string.IsNullOrEmpty(arg)) { cmdStartInfo.Arguments = arg; }
-            cmdStartInfo.RedirectStandardOutput = true;
-            cmdStartInfo.RedirectStandardError = true;
-            cmdStartInfo.RedirectStandardInput = true;
-            cmdStartInfo.UseShellExecute = false;
-            cmdStartInfo.CreateNoWindow = true;
-
-            Process cmdProcess = new Process();
-            cmdProcess.StartInfo = cmdStartInfo;
+            var cmdProcess = new Process {StartInfo = cmdStartInfo};
             cmdProcess.ErrorDataReceived += cmd_Error;
             cmdProcess.OutputDataReceived += cmd_DataReceived;
             cmdProcess.EnableRaisingEvents = true;
@@ -2101,7 +2106,7 @@ namespace GTAServer.ServerInstance
         /// </summary>
         /// <param name="sender">Unused...</param>
         /// <param name="e">DataReceivedEventArgs</param>
-        static void cmd_DataReceived(object sender, DataReceivedEventArgs e)
+        private static void cmd_DataReceived(object sender, DataReceivedEventArgs e)
         {
             Log.Debug("Output from other process");
             Log.Debug(e.Data);
@@ -2112,7 +2117,7 @@ namespace GTAServer.ServerInstance
         /// </summary>
         /// <param name="sender">Unused...</param>
         /// <param name="e">DataReceivedEventArgs</param>
-        static void cmd_Error(object sender, DataReceivedEventArgs e)
+        private static void cmd_Error(object sender, DataReceivedEventArgs e)
         {
             Log.Debug("Error from other process");
             Log.Debug(e.Data);
