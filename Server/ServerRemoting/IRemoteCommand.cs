@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace GTAServer.ServerRemoting
 {
-    interface IRemoteCommand
+    public interface IRemoteCommand
     {
         string HelpText { get; }
         RemotingResponse OnCommandRun(List<string> args);

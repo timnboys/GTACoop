@@ -356,8 +356,8 @@ namespace AdminTools
                     {
                         ServerInstance.SendChatMessageToPlayer(message.Sender, "SERVER", "Register to use this command."); message.Supress = true; return message;
                     }
-                    if (message.Sender.afk) { ServerInstance.SendChatMessageToPlayer(message.Sender, "SERVER", "You are already AFK."); message.Supress = true; return message; }
-                    message.Sender.afk = true;
+                    if (message.Sender.Afk) { ServerInstance.SendChatMessageToPlayer(message.Sender, "SERVER", "You are already AFK."); message.Supress = true; return message; }
+                    message.Sender.Afk = true;
                     ServerInstance.SendChatMessageToAll(message.Sender.DisplayName, "has gone AFK."); message.Supress = true; return message;
                 }
                 if (message.Message.ToLower().Equals("/back"))
@@ -366,8 +366,8 @@ namespace AdminTools
                     {
                         ServerInstance.SendChatMessageToPlayer(message.Sender, "SERVER", "Register to use this command."); message.Supress = true; return message;
                     }
-                    if (!message.Sender.afk) { ServerInstance.SendChatMessageToPlayer(message.Sender, "SERVER", "You are not AFK."); message.Supress = true; return message; }
-                    ServerInstance.SendChatMessageToAll(message.Sender.DisplayName, "is now back."); message.Sender.afk = false; message.Supress = true; return message;
+                    if (!message.Sender.Afk) { ServerInstance.SendChatMessageToPlayer(message.Sender, "SERVER", "You are not AFK."); message.Supress = true; return message; }
+                    ServerInstance.SendChatMessageToAll(message.Sender.DisplayName, "is now back."); message.Sender.Afk = false; message.Supress = true; return message;
 
                 }
                 if (message.Message.ToLower().Equals("/l"))
@@ -376,11 +376,11 @@ namespace AdminTools
                     {
                         ServerInstance.SendChatMessageToPlayer(message.Sender, "SERVER", "Insufficent privileges."); message.Supress = true; return message;
                     }
-                    for (var i = 0; i < ServerInstance.Clients.Count; i++)
+                    foreach (var t in ServerInstance.Clients)
                     {
                         try
                         {
-                            Client target = ServerInstance.Clients[i];
+                            var target = t;
                             Console.WriteLine($"Nickname: {target.DisplayName.ToString()} | " +
                                               $"Realname: {target.Name.ToString()} |" +
                                               $"Ping: {Math.Round(target.Latency * 1000, MidpointRounding.AwayFromZero).ToString(CultureInfo.InvariantCulture)}ms | " +
