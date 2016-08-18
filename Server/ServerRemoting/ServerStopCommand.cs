@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace GTAServer.ServerRemoting
 {
     [RemotingCommand(name: "server.stop", desc: "Stops a server.")]
-    class ServerStopCommand : IRemoteCommand
+    public class ServerStopCommand : IRemoteCommand
     {
         public string HelpText => "Stop a server. Requires one argument: server handle";
 

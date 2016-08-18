@@ -47,6 +47,7 @@ namespace GTAServer.ServerRemoting
                 if (obj == null) continue;
                 var commandInfo = (RemotingCommandAttribute) Attribute.GetCustomAttribute(type, typeof(RemotingCommandAttribute));
                 Commands.Add(commandInfo.Name, obj);
+                Log.Debug("Command loaded: " + commandInfo.Name);
             }
             _server.Start();
         }
