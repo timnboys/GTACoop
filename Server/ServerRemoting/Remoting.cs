@@ -1,7 +1,9 @@
 ﻿using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using GTAServer.ServerInstance;
@@ -12,7 +14,7 @@ using ProtoBuf;
 
 namespace GTAServer.ServerRemoting
 {
-    class Remoting
+    public class Remoting
     {
         private ILog Log;
         private readonly NetServer _server;
@@ -32,8 +34,20 @@ namespace GTAServer.ServerRemoting
         /// </summary>
         public void Start()
         {
-            Commands.Add("server.start", new ServerStartCommand());
-            Commands.Add("server.stop", new ServerStopCommand());
+            var asm = Assembly.GetCallingAssembly();
+            var types = asm.GetExportedTypes();
+            var validTypes = types.Where(t => !t.IsInterface && !t.IsAbstract);
+            validTypes =
+                validTypes.Where(
+                    t => ((RemotingCommandAttribute) Attribute.GetCustomAttribute(t, typeof(RemotingCommandAttribute))) != null);
+            validTypes = validTypes.Where(t => typeof(IRemoteCommand).IsAssignableFrom(t));
+            foreach (var type in validTypes)
+            {
+                var obj = Activator.CreateInstance(type) as IRemoteCommand;
+                if (obj == null) continue;
+                var commandInfo = (RemotingCommandAttribute) Attribute.GetCustomAttribute(type, typeof(RemotingCommandAttribute));
+                Commands.Add(commandInfo.Name, obj);
+            }
             _server.Start();
         }
 

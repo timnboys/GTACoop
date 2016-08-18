@@ -507,13 +507,14 @@ namespace GTAServer.ServerInstance
         {
             foreach (var plugin in plugins) LoadPlugin(plugin);
         }
+
         public Dictionary<string, IPlugin> LoadPlugin(string pluginFilename)
         {
             var pluginDict = new Dictionary<string, IPlugin>();
             var asm = Assembly.LoadFile(Location + "plugins" + Path.DirectorySeparatorChar + pluginFilename + ".dll");
             var types = asm.GetExportedTypes();
             var validTypes = types.Where(t => !t.IsInterface && !t.IsAbstract);
-            validTypes = validTypes.Where(t => ((PluginAttribute)Attribute.GetCustomAttribute(t, typeof(PluginAttribute)) != null));
+            validTypes = validTypes.Where(t => (PluginAttribute)Attribute.GetCustomAttribute(t, typeof(PluginAttribute)) != null);
             validTypes = validTypes.Where(t => typeof(IPlugin).IsAssignableFrom(t));
             var typeList = validTypes as IList<Type> ?? validTypes.ToList();
             if (!typeList.Any()) return new Dictionary<string, IPlugin>();

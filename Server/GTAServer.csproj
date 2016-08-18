@@ -103,6 +103,7 @@
     <Compile Include="ServerInstance\GameServer.cs" />
     <Compile Include="ServerInstance\NativeData.cs" />
     <Compile Include="ServerInstance\ServerScript.cs" />
+    <Compile Include="ServerInstance\ServerServices.cs" />
     <Compile Include="ServerInstance\ServerSettings.cs" />
     <Compile Include="PluginAPI\IPlugin.cs" />
     <Compile Include="PluginAPI\PluginAttribute.cs" />
@@ -110,6 +111,7 @@
     <Compile Include="ServerInstance\VehicleData.cs" />
     <Compile Include="ServerRemoting\IRemoteCommand.cs" />
     <Compile Include="ServerRemoting\Remoting.cs" />
+    <Compile Include="ServerRemoting\RemotingCommandAttribute.cs" />
     <Compile Include="ServerRemoting\RemotingPacket.cs" />
     <Compile Include="ServerRemoting\ServerStartCommand.cs" />
     <Compile Include="ServerRemoting\ServerStopCommand.cs" />

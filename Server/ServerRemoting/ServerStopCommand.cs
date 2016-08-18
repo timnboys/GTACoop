@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace GTAServer.ServerRemoting
 {
+    [RemotingCommand(name: "server.stop", desc: "Stops a server.")]
     class ServerStopCommand : IRemoteCommand
     {
         public string HelpText => "Stop a server. Requires one argument: server name";

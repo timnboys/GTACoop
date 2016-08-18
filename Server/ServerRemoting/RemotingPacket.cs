@@ -11,7 +11,7 @@ namespace GTAServer.ServerRemoting
     /// Packet sent from client to run a remoting command
     /// </summary>
     [ProtoContract]
-    class RemotingPacket
+    public class RemotingPacket
     {
         /// <summary>
         /// User to run command as
@@ -47,7 +47,7 @@ namespace GTAServer.ServerRemoting
     /// Response from server to client
     /// </summary>
     [ProtoContract]
-    class RemotingResponse
+    public class RemotingResponse
     {
         /// <summary>
         /// Command stauts
