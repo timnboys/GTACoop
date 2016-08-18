@@ -10,7 +10,7 @@ namespace GTAServer.ServerRemoting
     [RemotingCommand(name: "server.start", desc: "Start a server.")]
     public class ServerStartCommand : IRemoteCommand
     {
-        public string HelpText => "Start a server. Requires one argument: server name";
+        public string HelpText => "Start a server. Requires one argument: server handle";
 
         public RemotingResponse OnCommandRun(List<string> args)
         {
