@@ -1,19 +1,17 @@
 ﻿using System;
 
-namespace GTAServer
+namespace GTAServer.ServerInstance
 {
     public class InstanceSettings
     {
         public ServerSettings[] Servers;
         public string RemoteUser;
         public string RemotePassword;
-        public string DbPath;
         public InstanceSettings()
         {
             Servers = new ServerSettings[] {new ServerSettings()};
             RemoteUser = "admin";
             RemotePassword = "password";
-            DbPath = "GTAServer.sqlite";
         }
     }
 

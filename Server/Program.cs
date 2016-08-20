@@ -10,7 +10,6 @@ using System.Xml.Serialization;
 using GTAServer.ServerInstance;
 using log4net;
 using log4net.Config;
-using SQLite;
 
 namespace GTAServer 
 {
@@ -46,12 +45,6 @@ namespace GTAServer
         public static bool AllowOutdatedClients = false;
 
         public static InstanceSettings Settings;
-
-        /// <summary>
-        /// SQLite Database
-        /// </summary>
-        public static SQLiteConnection Db;
-
         /// <summary>
         /// Delete a file
         /// </summary>
@@ -70,7 +63,8 @@ namespace GTAServer
         private static InstanceSettings ReadSettings(string path)
         {
             var ser = new XmlSerializer(typeof(InstanceSettings));
-
+            Log.Warn("WARNING! Debug build, sandboxing not enabled!");
+            Log.Warn("It is advised to only run a single server instance!");
             if (File.Exists(path))
             {
                 using (var stream = File.OpenRead(path)) Settings = (InstanceSettings)ser.Deserialize(stream);
@@ -98,10 +92,7 @@ namespace GTAServer
         {
             XmlConfigurator.Configure(new System.IO.FileInfo("logging.xml"));
             Log.Debug("Loading settings");
-            Log.Warn("WARNING! Debug build, sandboxing not enabled!");
-            Log.Warn("It is advised to only run a single server instance!");
             GlobalSettings = ReadSettings(Program.ServerHostLocation + ((args.Length > 0) ? args[0] : "Settings.xml"));
-            Db = OpenConnection(GlobalSettings.DbPath);
 
             var remoting = new ServerRemoting.Remoting(4490);
             remoting.Start();
@@ -117,17 +108,6 @@ namespace GTAServer
                 thread.Value.Join(100);
                 remotingThread.Join(10);
             }
-        }
-
-        public static SQLiteConnection OpenConnection(string dbPath)
-        {
-            var db = new SQLiteConnection(dbPath);
-            db.CreateTable<Servers>();
-            db.CreateTable<Accounts>();
-            db.CreateTable<Bans>();
-            db.CreateTable<Groups>();
-            db.CreateTable<Permissions>();
-            return db;
         }
 
         public static void StartServer(ServerSettings settings)
