@@ -31,8 +31,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x64</PlatformTarget>
-    <DocumentationFile>
-    </DocumentationFile>
+    <DocumentationFile>GTACoOp.XML</DocumentationFile>
     <FileAlignment>8192</FileAlignment>
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
