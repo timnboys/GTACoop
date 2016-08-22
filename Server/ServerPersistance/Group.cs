@@ -11,8 +11,8 @@ namespace GTAServer.ServerPersistance
         public string Name;
         public List<string> Permissions;
 
-        public string NamePrefix;
-        public string NameSuffix;
+        public string ChatPrefix;
+        public string ChatSuffix;
 
         public int GroupRank;
     }

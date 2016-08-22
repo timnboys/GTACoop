@@ -60,6 +60,10 @@
     </AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="BCrypt.Net, Version=0.1.5073.29922, Culture=neutral, PublicKeyToken=6bcd409ee6bc9292, processorArchitecture=MSIL">
+      <HintPath>..\packages\BCrypt-Official.0.1.109\lib\BCrypt.Net.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="log4net, Version=1.2.15.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
       <HintPath>..\packages\log4net.2.0.5\lib\net45-full\log4net.dll</HintPath>
       <Private>True</Private>
@@ -92,7 +96,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CallbackToManager.cs" />
     <Compile Include="PluginAPI\ChatEventArgs.cs" />
     <Compile Include="PluginAPI\IncomingConnectionEventArgs.cs" />
     <Compile Include="PluginAPI\PlayerConnectionEventArgs.cs" />
@@ -109,6 +112,11 @@
     <Compile Include="PluginAPI\PluginAttribute.cs" />
     <Compile Include="PluginAPI\PluginEventManager.cs" />
     <Compile Include="ServerInstance\VehicleData.cs" />
+    <Compile Include="ServerPersistance\Ban.cs" />
+    <Compile Include="ServerPersistance\Group.cs" />
+    <Compile Include="ServerPersistance\PersistanceRoot.cs" />
+    <Compile Include="ServerPersistance\Server.cs" />
+    <Compile Include="ServerPersistance\User.cs" />
     <Compile Include="ServerRemoting\IRemoteCommand.cs" />
     <Compile Include="ServerRemoting\Remoting.cs" />
     <Compile Include="ServerRemoting\RemotingCommandAttribute.cs" />
@@ -150,6 +158,9 @@
       <Isolated>False</Isolated>
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </COMReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="LICENSE.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
