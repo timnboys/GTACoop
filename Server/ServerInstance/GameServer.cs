@@ -434,11 +434,6 @@ namespace GTAServer.ServerInstance
         public static ILog Log;
 
         /// <summary>
-        /// Callback to the main server manager - note that this is class is not this appdomain!
-        /// </summary>
-        public CallbackToManager ServerManagerCallback;
-
-        /// <summary>
         /// Dictionary containing all the plugins for the server
         /// </summary>
         public Dictionary<string,IPlugin> ServerPlugins;
@@ -459,7 +454,6 @@ namespace GTAServer.ServerInstance
         {
             if (InternalName == null) InternalName = "UNKNOWN_SERVER_FIXME";
             if (Log == null) SetupLogger();
-            if (ServerManagerCallback == null) SetupCallback();
             Start();
             while (true)
             {
@@ -477,21 +471,6 @@ namespace GTAServer.ServerInstance
 
             XmlConfigurator.Configure(new System.IO.FileInfo("logging.xml"));
             Log = LogManager.GetLogger(InternalName);
-        }
-
-        /// <summary>
-        /// Make the server hook into the server manager.
-        /// </summary>
-        public void SetupCallback()
-        {
-            var host = new CorRuntimeHostClass();
-            object obj;
-            host.GetDefaultDomain(out obj);
-            var parentAppDomain = (AppDomain)obj;
-            ServerManagerCallback =
-                (CallbackToManager)parentAppDomain.CreateInstanceFrom(new Uri(Assembly.GetExecutingAssembly().CodeBase).LocalPath,
-                   "GTAServer.CallbackToManager").Unwrap();
-            ServerManagerCallback.StartHook(InternalName);
         }
 
         /// <summary>
