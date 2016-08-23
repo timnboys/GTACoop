@@ -58,5 +58,6 @@ namespace GTAServer.ServerPersistance
 
         public List<Ban> Bans;
         public Dictionary<string, User> Users;
+        public Dictionary<string, Group> Groups;
     }
 }

@@ -15,7 +15,9 @@ namespace GTAServer.ServerPersistance
             get { return _password; }
             set { _password = BCrypt.Net.BCrypt.HashPassword(value); }
         }
-        public List<Group> Groups;
+
+        public List<string> Groups;
+        private List<Group> _groups;
         private List<string> _perms;
         private static Dictionary<string, Regex> _regexCache = new Dictionary<string, Regex>();
         public bool VerifyUserPassword(string passwordAttempt)
@@ -25,23 +27,33 @@ namespace GTAServer.ServerPersistance
 
         public void SortGroupsByRank()
         {
-            Groups.Sort((g1, g2) => g1.GroupRank.CompareTo(g2.GroupRank));
+            _groups.Sort((g1, g2) => g1.GroupRank.CompareTo(g2.GroupRank));
         }
         public string GetChatPrefix()
         {
-            return Groups[0]?.ChatPrefix ?? "";
+            return _groups[0]?.ChatPrefix ?? "";
         }
 
         public string GetChatSuffix()
         {
-            return Groups[0]?.ChatSuffix ?? "";
+            return _groups[0]?.ChatSuffix ?? "";
         }
 
-
+        public void UpdateGroups(Server userServer)
+        {
+            foreach (var groupName in Groups)
+            {
+                if (userServer.Groups.ContainsKey(groupName))
+                {
+                    _groups.Add(userServer.Groups[groupName]);
+                }
+            }
+            BuildPerms();
+        }
         public void BuildPerms()
         {
             _perms = new List<string>();
-            foreach (var group in Groups)
+            foreach (var group in _groups)
             {
                 foreach (var perm in group.Permissions)
                 {

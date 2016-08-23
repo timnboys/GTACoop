@@ -15,5 +15,11 @@ namespace GTAServer.ServerPersistance
         public string ChatSuffix;
 
         public int GroupRank;
+
+        public void UpdateUsers(Server groupServer)
+        {
+            var usersToUpdate = groupServer.Users.Where(u => u.Value.Groups.Contains(Name));
+            foreach (var user in usersToUpdate) user.Value.UpdateGroups(groupServer);
+        }
     }
 }
