@@ -19,7 +19,7 @@ namespace GTAServer.ServerPersistance
         public List<string> Groups;
         private List<Group> _groups;
         private List<string> _perms;
-        private static Dictionary<string, Regex> _regexCache = new Dictionary<string, Regex>();
+        private static readonly Dictionary<string, Regex> RegexCache = new Dictionary<string, Regex>();
         public bool VerifyUserPassword(string passwordAttempt)
         {
             return BCrypt.Net.BCrypt.Verify(passwordAttempt, _password);
@@ -41,6 +41,7 @@ namespace GTAServer.ServerPersistance
 
         public void UpdateGroups(Server userServer)
         {
+            _groups = new List<Group>();
             foreach (var groupName in Groups)
             {
                 if (userServer.Groups.ContainsKey(groupName))
@@ -74,11 +75,11 @@ namespace GTAServer.ServerPersistance
                                        .Replace(@"\*", ".*?")
                                        .Replace(@"\?", ".")
                                    + "$";
-                if (!_regexCache.ContainsKey(regexPattern))
+                if (!RegexCache.ContainsKey(regexPattern))
                 {
-                    _regexCache.Add(regexPattern, new Regex(regexPattern, RegexOptions.Compiled));
+                    RegexCache.Add(regexPattern, new Regex(regexPattern, RegexOptions.Compiled));
                 }
-                var regex = _regexCache[regexPattern];
+                var regex = RegexCache[regexPattern];
                 if (regex.Match(neededPerm).Success) return true;
             }
             return false;
