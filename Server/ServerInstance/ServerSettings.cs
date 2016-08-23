@@ -7,11 +7,13 @@ namespace GTAServer.ServerInstance
         public ServerSettings[] Servers;
         public string RemoteUser;
         public string RemotePassword;
+        public bool ReportErrors;
         public InstanceSettings()
         {
             Servers = new ServerSettings[] {new ServerSettings()};
             RemoteUser = "admin";
             RemotePassword = "password";
+            ReportErrors = true;
         }
     }
 

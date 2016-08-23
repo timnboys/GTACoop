@@ -97,8 +97,7 @@ namespace GTAServer
                 XmlConfigurator.Configure(new System.IO.FileInfo("logging.xml"));
                 Log.Debug("Loading settings");
                 GlobalSettings =
-                    ReadSettings(Program.ServerHostLocation + ((args.Length > 0) ? args[0] : "Settings.xml"));
-                throw new Exception("Test exception");
+                    ReadSettings(ServerHostLocation + ((args.Length > 0) ? args[0] : "Settings.xml"));
                 var remoting = new ServerRemoting.Remoting(4490);
                 remoting.Start();
                 var remotingThread = new Thread(remoting.MainLoop);
