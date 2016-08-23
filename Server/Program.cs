@@ -10,6 +10,8 @@ using System.Xml.Serialization;
 using GTAServer.ServerInstance;
 using log4net;
 using log4net.Config;
+using SharpRaven;
+using SharpRaven.Data;
 
 namespace GTAServer 
 {
@@ -90,24 +92,45 @@ namespace GTAServer
 
         public static void Main(string[] args)
         {
-            XmlConfigurator.Configure(new System.IO.FileInfo("logging.xml"));
-            Log.Debug("Loading settings");
-            GlobalSettings = ReadSettings(Program.ServerHostLocation + ((args.Length > 0) ? args[0] : "Settings.xml"));
-
-            var remoting = new ServerRemoting.Remoting(4490);
-            remoting.Start();
-            var remotingThread = new Thread(remoting.MainLoop);
-            remotingThread.Start();
-
-            foreach (var server in GlobalSettings.Servers)
+            try
             {
-                StartServer(server);
+                XmlConfigurator.Configure(new System.IO.FileInfo("logging.xml"));
+                Log.Debug("Loading settings");
+                GlobalSettings =
+                    ReadSettings(Program.ServerHostLocation + ((args.Length > 0) ? args[0] : "Settings.xml"));
+                throw new Exception("Test exception");
+                var remoting = new ServerRemoting.Remoting(4490);
+                remoting.Start();
+                var remotingThread = new Thread(remoting.MainLoop);
+                remotingThread.Start();
+
+                foreach (var server in GlobalSettings.Servers)
+                {
+                    StartServer(server);
+                }
+                foreach (var thread in VirtualServerThreads)
+                {
+                    thread.Value.Join(100);
+                    remotingThread.Join(10);
+                }
             }
-            foreach (var thread in VirtualServerThreads)
+            catch (Exception e)
             {
-                thread.Value.Join(100);
-                remotingThread.Join(10);
+                SentryErrorSender(e);
+                throw;
             }
+        }
+
+        private static void SentryErrorSender(Exception e)
+        {
+            var ravenClient = new RavenClient("https://fb40b3620a5446a2a35eb8b835a67680:b5cbe6d46fb24decbe96957f54a7fa3b@sentry.nofla.me/2");
+            var ravenEvent = new SentryEvent(e);
+#if DEBUG
+            ravenEvent.Tags.Add("DebugBuild", "true");
+#else
+            ravenEvent.Tags.Add("DebugBuild", "false");
+#endif
+            ravenClient.Capture(ravenEvent);
         }
 
         public static void StartServer(ServerSettings settings)
@@ -121,6 +144,7 @@ namespace GTAServer
                 Log.Warn("Server config for " + settings.Handle + " is set to allow outdated clients, yet it has been disabled on the master server.");
                 settings.AllowOutdatedClients = false;
             }
+
             VirtualServerDomains[settings.Handle]=AppDomain.CreateDomain(settings.Handle);
             var domain = VirtualServerDomains[settings.Handle];
 #if DEBUG
@@ -147,7 +171,6 @@ namespace GTAServer
             curServer.InternalName = settings.Handle;
             curServer.ConfigureServer();
             curServer.SetupLogger();
-            curServer.SetupCallback();
             curServer.LoadPlugin("TestPlugin");
             Log.Info("Finished configuring server: " + settings.Handle + ", starting.");
             VirtualServerThreads[settings.Handle] = new Thread(curServer.StartAndRunMainLoop);
