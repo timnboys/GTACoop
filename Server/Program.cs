@@ -122,6 +122,21 @@ namespace GTAServer
 
         private static void SentryErrorSender(Exception e)
         {
+            if (GlobalSettings == null)
+            {
+                if (Log != null)
+                {
+                    Log.Fatal("Crash before settings were readable, reporting...");
+                }
+                else
+                {
+                    Console.WriteLine("Crash before logging was setup and settings were readable! Reporting...");
+                }
+            }
+            else
+            {
+                if (!GlobalSettings.ReportErrors) return;
+            }
             var ravenClient = new RavenClient("https://fb40b3620a5446a2a35eb8b835a67680:b5cbe6d46fb24decbe96957f54a7fa3b@sentry.nofla.me/2");
             var ravenEvent = new SentryEvent(e);
 #if DEBUG
