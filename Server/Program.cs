@@ -113,11 +113,13 @@ namespace GTAServer
                     remotingThread.Join(10);
                 }
             }
+#if !DEBUG
             catch (Exception e)
             {
                 SentryErrorSender(e);
                 throw;
             }
+#endif
         }
 
         private static void SentryErrorSender(Exception e)
