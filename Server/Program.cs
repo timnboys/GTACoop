@@ -92,6 +92,11 @@ namespace GTAServer
 
         public static void Main(string[] args)
         {
+            foreach (var arg in args)
+            {
+                if (Debug) continue;
+                if (arg == "--debug") Debug = true;
+            }
             try
             {
                 XmlConfigurator.Configure(new System.IO.FileInfo("logging.xml"));
