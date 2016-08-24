@@ -1,22 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+using ProtoBuf;
+
 namespace GTAServer.ServerPersistance
 {
+    [ProtoContract]
     public class User
     {
-        public string Username;
+        [ProtoMember(1)] public string Username;
         private string _password;
-        public string Password
+        [ProtoMember(2)] public string Password
         {
             get { return _password; }
             set { _password = BCrypt.Net.BCrypt.HashPassword(value); }
         }
 
-        public List<string> Groups;
+        [ProtoMember(3)] public List<string> Groups;
         private List<Group> _groups;
         private List<string> _perms;
         private static readonly Dictionary<string, Regex> RegexCache = new Dictionary<string, Regex>();

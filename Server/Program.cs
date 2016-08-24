@@ -13,7 +13,7 @@ using log4net.Config;
 using SharpRaven;
 using SharpRaven.Data;
 
-namespace GTAServer 
+namespace GTAServer
 {
     public static class Program
     {
@@ -40,7 +40,7 @@ namespace GTAServer
         /// <summary>
         /// Server debug mode
         /// </summary>
-        public static bool Debug = false;
+        public static bool Debug = System.Diagnostics.Debugger.IsAttached;
         /// <summary>
         /// If the server should allow the config option to allow old clients
         /// </summary>
@@ -102,7 +102,6 @@ namespace GTAServer
                 remoting.Start();
                 var remotingThread = new Thread(remoting.MainLoop);
                 remotingThread.Start();
-
                 foreach (var server in GlobalSettings.Servers)
                 {
                     StartServer(server);
@@ -113,13 +112,14 @@ namespace GTAServer
                     remotingThread.Join(10);
                 }
             }
-#if !DEBUG
+
             catch (Exception e)
             {
-                SentryErrorSender(e);
+                if (!Debug)
+                    SentryErrorSender(e);
                 throw;
             }
-#endif
+
         }
 
         private static void SentryErrorSender(Exception e)
@@ -139,41 +139,46 @@ namespace GTAServer
             {
                 if (!GlobalSettings.ReportErrors) return;
             }
-            var ravenClient = new RavenClient("https://fb40b3620a5446a2a35eb8b835a67680:b5cbe6d46fb24decbe96957f54a7fa3b@sentry.nofla.me/2");
+            var ravenClient =
+                new RavenClient(
+                    "https://fb40b3620a5446a2a35eb8b835a67680:b5cbe6d46fb24decbe96957f54a7fa3b@sentry.nofla.me/2")
+                {
+                    Release = Assembly.GetEntryAssembly().GetName().Version.ToString(),
+                    Environment = Debug ? "Debug" : "Release",
+                };
             var ravenEvent = new SentryEvent(e);
-#if DEBUG
-            ravenEvent.Tags.Add("DebugBuild", "true");
-#else
-            ravenEvent.Tags.Add("DebugBuild", "false");
-#endif
             ravenClient.Capture(ravenEvent);
         }
 
         public static void StartServer(ServerSettings settings)
         {
+            //throw new Exception("Test Exception 3");
             Log.Info("Creating new server instance: ");
             Log.Info("  - Handle: " + settings.Handle);
             Log.Info("  - Name: " + settings.Name);
             Log.Info("  - Player Limit: " + settings.MaxPlayers);
             if (settings.AllowOutdatedClients && !AllowOutdatedClients)
             {
-                Log.Warn("Server config for " + settings.Handle + " is set to allow outdated clients, yet it has been disabled on the master server.");
+                Log.Warn("Server config for " + settings.Handle +
+                         " is set to allow outdated clients, yet it has been disabled on the master server.");
                 settings.AllowOutdatedClients = false;
             }
 
-            VirtualServerDomains[settings.Handle]=AppDomain.CreateDomain(settings.Handle);
+            VirtualServerDomains[settings.Handle] = AppDomain.CreateDomain(settings.Handle);
             var domain = VirtualServerDomains[settings.Handle];
-#if DEBUG
-            // Have to do this because ReSharper didn't pick up on the #if/#else/#endif...
-            // ReSharper disable once UseObjectOrCollectionInitializer
-            var curServer = new GameServer();
-#else
-            VirtualServerHandles[settings.Handle] = domain.CreateInstanceFrom(new Uri(Assembly.GetExecutingAssembly().CodeBase).LocalPath,
-                "GTAServer.ServerInstance.GameServer");
+            if (Debug)
+            {
+                var curServer = new GameServer();
+            }
+            else
+            {
+                VirtualServerHandles[settings.Handle] =
+                    domain.CreateInstanceFrom(new Uri(Assembly.GetExecutingAssembly().CodeBase).LocalPath,
+                        "GTAServer.ServerInstance.GameServer");
+            }
             var handle = VirtualServerHandles[settings.Handle];
             VirtualServers[settings.Handle] = (GameServer)handle.Unwrap();
             var curServer = VirtualServers[settings.Handle];
-#endif
             curServer.Name = settings.Name;
             curServer.MaxPlayers = settings.MaxPlayers;
             curServer.Port = settings.Port;
@@ -207,12 +212,16 @@ namespace GTAServer
             if (!VirtualServers.ContainsKey(handle)) return;
             VirtualServers[handle].Stop();
             VirtualServerThreads[handle].Abort();
-#if DEBUG
-            Log.Debug("Debug build, no appdomain to unload.");
-#else
-            AppDomain.Unload(VirtualServerDomains[handle]);
-            VirtualServerDomains.Remove(handle);
-#endif
+            if (Debug)
+            {
+                Log.Debug("Debug build, no appdomain to unload.");
+            }
+            else
+            {
+                AppDomain.Unload(VirtualServerDomains[handle]);
+                VirtualServerDomains.Remove(handle);
+
+            }
             VirtualServerHandles.Remove(handle);
             VirtualServerThreads.Remove(handle);
             VirtualServers.Remove(handle);
