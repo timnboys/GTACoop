@@ -54,8 +54,24 @@ namespace GTAServer.ServerPersistance
         [ProtoMember(11)] public string[] Filterscripts { get; set; }
 
 
-        [ProtoMember(12)] public List<Ban> Bans;
-        [ProtoMember(13)] public Dictionary<string, User> Users;
-        [ProtoMember(14)] public Dictionary<string, Group> Groups;
+        [ProtoMember(12)] public List<Ban> Bans = new List<Ban>();
+        [ProtoMember(13)] public Dictionary<string, User> Users = new Dictionary<string, User>();
+        [ProtoMember(14)] public Dictionary<string, Group> Groups = new Dictionary<string, Group>();
+
+        public Server(string name, int maxPlayers, int port, bool passwordProtected, string password, bool announce, string masterServer, bool allowDisplayNames, bool allowOutdatedClients, string gamemode, string[] filterscripts)
+        {
+            Name = name;
+            MaxPlayers = maxPlayers;
+            Port = port;
+            PasswordProtected = passwordProtected;
+            Password = password;
+            Announce = announce;
+            MasterServer = masterServer;
+            AllowDisplayNames = allowDisplayNames;
+            AllowOutdatedClients = allowOutdatedClients;
+            Gamemode = gamemode;
+            Filterscripts = filterscripts;
+            Groups.Add("default", new Group("default", "", "", 0, true));
+        }
     }
 }

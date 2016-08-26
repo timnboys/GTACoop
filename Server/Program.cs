@@ -171,19 +171,21 @@ namespace GTAServer
 
             VirtualServerDomains[settings.Handle] = AppDomain.CreateDomain(settings.Handle);
             var domain = VirtualServerDomains[settings.Handle];
+            GameServer curServer;
             if (Debug)
             {
-                var curServer = new GameServer();
+                curServer = new GameServer();
             }
             else
             {
                 VirtualServerHandles[settings.Handle] =
                     domain.CreateInstanceFrom(new Uri(Assembly.GetExecutingAssembly().CodeBase).LocalPath,
                         "GTAServer.ServerInstance.GameServer");
+
+                var handle = VirtualServerHandles[settings.Handle];
+                VirtualServers[settings.Handle] = (GameServer) handle.Unwrap();
+                curServer = VirtualServers[settings.Handle];
             }
-            var handle = VirtualServerHandles[settings.Handle];
-            VirtualServers[settings.Handle] = (GameServer)handle.Unwrap();
-            var curServer = VirtualServers[settings.Handle];
             curServer.Name = settings.Name;
             curServer.MaxPlayers = settings.MaxPlayers;
             curServer.Port = settings.Port;
