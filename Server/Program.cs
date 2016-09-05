@@ -40,7 +40,7 @@ namespace GTAServer
         /// <summary>
         /// Server debug mode
         /// </summary>
-        public static bool Debug = System.Diagnostics.Debugger.IsAttached;
+        public static bool Debug;
         /// <summary>
         /// If the server should allow the config option to allow old clients
         /// </summary>
@@ -92,41 +92,52 @@ namespace GTAServer
 
         public static void Main(string[] args)
         {
+            Debug = System.Diagnostics.Debugger.IsAttached;
             foreach (var arg in args)
             {
                 if (Debug) continue;
                 if (arg == "--debug") Debug = true;
             }
-            try
+            if (Debug)
             {
-                XmlConfigurator.Configure(new System.IO.FileInfo("logging.xml"));
-                Log.Debug("Loading settings");
-                GlobalSettings =
-                    ReadSettings(ServerHostLocation + ((args.Length > 0) ? args[0] : "Settings.xml"));
-                var remoting = new ServerRemoting.Remoting(4490);
-                remoting.Start();
-                var remotingThread = new Thread(remoting.MainLoop);
-                remotingThread.Start();
-                foreach (var server in GlobalSettings.Servers)
+                try
                 {
-                    StartServer(server);
+                    RunServer(args);
                 }
-                foreach (var thread in VirtualServerThreads)
+                catch (Exception e)
                 {
-                    thread.Value.Join(100);
-                    remotingThread.Join(10);
+                    if (!Debug)
+                        SentryErrorSender(e);
+                    throw;
                 }
             }
-
-            catch (Exception e)
+            else
             {
-                if (!Debug)
-                    SentryErrorSender(e);
-                throw;
+                RunServer(args);
             }
-
         }
 
+        public static void RunServer(string[] args)
+        {
+            XmlConfigurator.Configure(new System.IO.FileInfo("logging.xml"));
+            Log.Debug("Loading settings");
+            GlobalSettings =
+                ReadSettings(ServerHostLocation + ((args.Length > 0) ? args[0] : "Settings.xml"));
+            var database = ServerPersistance.PersistanceRoot.LoadDb("server.db");
+            var remoting = new ServerRemoting.Remoting(4490);
+            remoting.Start();
+            var remotingThread = new Thread(remoting.MainLoop);
+            remotingThread.Start();
+            foreach (var server in GlobalSettings.Servers)
+            {
+                StartServer(server);
+            }
+            foreach (var thread in VirtualServerThreads)
+            {
+                thread.Value.Join(100);
+                remotingThread.Join(10);
+            }
+        }
         private static void SentryErrorSender(Exception e)
         {
             if (GlobalSettings == null)
@@ -157,7 +168,6 @@ namespace GTAServer
 
         public static void StartServer(ServerSettings settings)
         {
-            //throw new Exception("Test Exception 3");
             Log.Info("Creating new server instance: ");
             Log.Info("  - Handle: " + settings.Handle);
             Log.Info("  - Name: " + settings.Name);
@@ -172,7 +182,7 @@ namespace GTAServer
             VirtualServerDomains[settings.Handle] = AppDomain.CreateDomain(settings.Handle);
             var domain = VirtualServerDomains[settings.Handle];
             GameServer curServer;
-            if (Debug)
+            if (!Debug)
             {
                 curServer = new GameServer();
             }
@@ -183,7 +193,7 @@ namespace GTAServer
                         "GTAServer.ServerInstance.GameServer");
 
                 var handle = VirtualServerHandles[settings.Handle];
-                VirtualServers[settings.Handle] = (GameServer) handle.Unwrap();
+                VirtualServers[settings.Handle] = (GameServer)handle.Unwrap();
                 curServer = VirtualServers[settings.Handle];
             }
             curServer.Name = settings.Name;
@@ -199,7 +209,9 @@ namespace GTAServer
             curServer.InternalName = settings.Handle;
             curServer.ConfigureServer();
             curServer.SetupLogger();
-            curServer.LoadPlugin("TestPlugin");
+            if (curServer.LoadPlugin("TestPlugin") == false) {
+                Log.Fatal("Server " + settings.Handle + " returned false when loading plugin. Cancelling load.");
+            }
             Log.Info("Finished configuring server: " + settings.Handle + ", starting.");
             VirtualServerThreads[settings.Handle] = new Thread(curServer.StartAndRunMainLoop);
             VirtualServerThreads[settings.Handle].Start();

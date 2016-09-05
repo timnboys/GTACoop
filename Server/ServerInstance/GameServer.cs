@@ -487,26 +487,36 @@ namespace GTAServer.ServerInstance
             foreach (var plugin in plugins) LoadPlugin(plugin);
         }
 
-        public Dictionary<string, IPlugin> LoadPlugin(string pluginFilename)
+        public bool LoadPlugin(string pluginFilename)
         {
-            var pluginDict = new Dictionary<string, IPlugin>();
-            var asm = Assembly.LoadFile(Location + "plugins" + Path.DirectorySeparatorChar + pluginFilename + ".dll");
-            var types = asm.GetExportedTypes();
-            var validTypes = types.Where(t => !t.IsInterface && !t.IsAbstract);
-            validTypes = validTypes.Where(t => (PluginAttribute)Attribute.GetCustomAttribute(t, typeof(PluginAttribute)) != null);
-            validTypes = validTypes.Where(t => typeof(IPlugin).IsAssignableFrom(t));
-            var typeList = validTypes as IList<Type> ?? validTypes.ToList();
-            if (!typeList.Any()) return new Dictionary<string, IPlugin>();
-            foreach (var type in typeList)
+            try
             {
-                var obj = Activator.CreateInstance(type) as IPlugin;
-                if (obj == null) continue;
-                var pluginInfo =
-                    (PluginAttribute) Attribute.GetCustomAttribute(type, typeof(PluginAttribute));
-                obj.Start(this, new PluginEventManager(pluginInfo.Name));
-                pluginDict.Add(pluginInfo.Name, obj);
+                var pluginDict = new Dictionary<string, IPlugin>();
+                var asm = Assembly.LoadFile(Location + "plugins" + Path.DirectorySeparatorChar + pluginFilename + ".dll");
+                var types = asm.GetExportedTypes();
+                var validTypes = types.Where(t => !t.IsInterface && !t.IsAbstract);
+                validTypes =
+                    validTypes.Where(
+                        t => (PluginAttribute) Attribute.GetCustomAttribute(t, typeof(PluginAttribute)) != null);
+                validTypes = validTypes.Where(t => typeof(IPlugin).IsAssignableFrom(t));
+                var typeList = validTypes as IList<Type> ?? validTypes.ToList();
+                if (!typeList.Any()) return false;
+                foreach (var type in typeList)
+                {
+                    var obj = Activator.CreateInstance(type) as IPlugin;
+                    if (obj == null) continue;
+                    var pluginInfo =
+                        (PluginAttribute) Attribute.GetCustomAttribute(type, typeof(PluginAttribute));
+                    obj.Start(this, new PluginEventManager(pluginInfo.Name));
+                    pluginDict.Add(pluginInfo.Name, obj);
+                }
+                return true;
             }
-            return pluginDict;
+            catch (Exception e)
+            {
+                Console.Write(e);
+                return false;
+            }
         }
 
         /// <summary>

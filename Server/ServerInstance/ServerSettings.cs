@@ -95,7 +95,7 @@ namespace GTAServer.ServerInstance
             Announce = true;
             AllowDisplayNames = true;
             AllowOutdatedClients = false;
-            MasterServer = "http://46.101.1.92/";
+            MasterServer = "http://gtamaster.nofla.me";
             Filterscripts = new string[] {""};
             Handle = "default";
         }
