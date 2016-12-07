@@ -32,7 +32,7 @@ public string[] BlackList { get; set; }*/
             KickOnDefaultNickName = true;
             KickOnNameDifference = false;
             SocialClubOnly = false;
-            MOTD = "Welcome to this GTA 5 Co-op Server! Max Ping: 250";
+            MOTD = "Welcome to C2CJ Test Server! Max Ping: 250";
             MaxPing = 250;
             AntiClones = true;
             KickOnDifferentScript = true;

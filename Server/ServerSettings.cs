@@ -83,9 +83,9 @@ namespace GTAServer
         public ServerSettings()
         {
             Port = 4499;
-            MaxPlayers = 16;
-            Name = "Simple GTA Server";
-            Password = "changeme";
+            MaxPlayers = 50;
+            Name = "C2CJ Test Server";
+            Password = "99007600";
             PasswordProtected = false;
             Gamemode = "freeroam";
             Announce = true;
